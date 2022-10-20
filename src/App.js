@@ -1,11 +1,40 @@
 import "antd/dist/antd.min.css";
 import "./App.css";
-import { Button, Input, Select, Form, Table } from "antd";
-import { useState } from "react";
+import {
+  Button,
+  Input,
+  Select,
+  Form,
+  Table,
+  message,
+  Alert,
+  DatePicker,
+  TimePicker,
+  Spin,
+  Progress,
+} from "antd";
+import { useEffect, useState } from "react";
 import { PoweroffOutlined, UserOutlined } from "@ant-design/icons";
 
 function App() {
   const [loading, setLoading] = useState(false);
+  const [loadingLogin, setLoadingLogin] = useState(false);
+	const [loadingpagination, setLoadingpagination] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [loadingSpinning, setLoadingSpinning] = useState(false);
+  const [dataPagination, setDataPagination] = useState([]);
+
+  useEffect(() => {
+    fetch("https://jsonplaceholder.typicode.com/todos")
+      .then((res) => res.json())
+      .then((data) => setDataPagination(data))
+      .catch((err) => {
+        throw err;
+      })
+			.finally(() => {
+
+			})
+  }, []);
 
   const fruits = ["Banana", "Mango", "Orange", "Cherry"];
   const data = [
@@ -27,19 +56,19 @@ function App() {
       address: "Address 3",
       key: "3",
     },
-		{
+    {
       name: "Name 4",
       age: 13,
       address: "Address 4",
       key: "4",
-    }
+    },
   ];
   const columns = [
     {
       title: "Name",
       dataIndex: "name",
       key: "key",
-			sorter: (a, b) => b.name.localeCompare(a.name),
+      // sorter: (a, b) => b.name.localeCompare(a.name),
       render: (name) => {
         return <a href="https://www.google.com">{name}</a>;
       },
@@ -48,7 +77,7 @@ function App() {
       title: "Age",
       dataIndex: "age",
       key: "key",
-      sorter: (a, b) => a.age - b.age
+      sorter: (a, b) => a.age - b.age,
     },
     {
       title: "Address",
@@ -64,6 +93,25 @@ function App() {
     },
   ];
 
+  const columnsPagination = [
+    {
+      key: "1",
+      title: "ID",
+      dataIndex: "id",
+    },
+    {
+      key: "2",
+      title: "UserID",
+      dataIndex: "userId",
+    },
+    {
+      key: "3",
+      title: "Status",
+      dataIndex: "completed",
+      render: (completed) => <p>{completed ? "Completed" : "Progressing"}</p>,
+    },
+  ];
+
   const handleClick = (event) => {
     console.log("click");
     setLoading(true);
@@ -74,6 +122,16 @@ function App() {
 
   const handleFinish = (e) => {
     console.log({ e });
+    setLoadingLogin(true);
+    setTimeout(() => {
+      // message.success("Login Success");
+      setShowAlert(true);
+      setLoadingLogin(false);
+    }, 2000);
+  };
+
+  const handlerToggleSpining = (e) => {
+    setLoadingSpinning((pre) => !pre);
   };
 
   return (
@@ -136,6 +194,7 @@ function App() {
         </Select>
 
         <br />
+        {showAlert && <Alert type="success" message="Login Success" closable />}
         <Form onFinish={handleFinish}>
           <Form.Item label="UserName" name="username">
             <Input placeholder="UserName" required></Input>
@@ -144,7 +203,7 @@ function App() {
             <Input.Password placeholder="Password" required></Input.Password>
           </Form.Item>
           <Form.Item>
-            <Button block type="primary" htmlType="submit">
+            <Button block type="primary" htmlType="submit" loading={loadingLogin}>
               Log In
             </Button>
           </Form.Item>
@@ -152,6 +211,29 @@ function App() {
 
         <br />
         <Table dataSource={data} columns={columns}></Table>
+
+        <br />
+        <DatePicker picker="date" />
+        <DatePicker.RangePicker disabled />
+        <TimePicker />
+
+        <br />
+        <Spin spinning={loadingSpinning} size="default"></Spin>
+        <Button onClick={handlerToggleSpining}>Toggle Spinning</Button>
+        <Spin spinning={loadingSpinning} size="large">
+          <p>P1</p>
+          <p>P2</p>
+          <p>P3</p>
+        </Spin>
+
+        <br />
+        <Progress percent={33} />
+        <Progress percent={33} type="circle" />
+        <Progress percent={33} type="dashboard" status="active" />
+        <Progress percent={33} type="line" strokeColor={"red"} strokeWidth={50} status="active" />
+
+        <br />
+        <Table dataSource={dataPagination} columns={columnsPagination}></Table>
       </header>
     </div>
   );
